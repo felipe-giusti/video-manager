@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-configmap
+data:
+  MONGO_HOST: host.minikube.internal
+  MQ_HOST: rabbitmq

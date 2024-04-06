@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example
+  labels:
+    app: example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example
+  template:
+    metadata:
+      labels:
+        app: example
+    spec:
+      containers:
+      - name: example-processor
+      #TODO change image tag
+        image: felipegiusti/example-processor:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: example-configmap
+        # - secretRef:
+        #     name: manager-secret
