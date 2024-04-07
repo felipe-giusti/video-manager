@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-configmap
+data:
+  APP_HOST: video-manager.com
+  APP_PORT: "8080"
+  APP_ROUTE: videos
+
+  HAS_WINDOWS_NOTIFICATION: "true"
+  HAS_TELEGRAM_NOTIFICATION: "true"
+
+  MQ_HOST: rabbitmq
