@@ -1,4 +1,4 @@
-import pika, sys, os
+import pika, sys, os, json
 from use_cases import example_processing
 
 
@@ -11,6 +11,7 @@ def main():
 
     def callback(ch, method, properties, body):
         print(f" [x] Received {body}")
+        body = json.loads(body.decode("utf-8").replace("'",'"'))
 
         err = example_processing.process(body.get("fid"), ch)
 
