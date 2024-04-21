@@ -1,0 +1,51 @@
+.top-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.top-buttons button,
+#updateForm button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align items to the top */
+    min-height: 100vh; /* Extend container to the bottom of the viewport */
+}
+
+.video-container {
+    width: 50%; /* Adjust the width as needed */
+    max-width: 100%; /* Ensure the video does not exceed its original size */
+    height: auto; /* Let the height adjust to maintain aspect ratio */
+    max-height: 50vh; /* Set a maximum height for the video container */
+}
+
+.video-container video {
+    width: 100%; /* Ensure the video fills the container */
+    height: auto; /* Let the height adjust to maintain aspect ratio */
+}
+
+
+#info {
+    width: 25%;
+    margin-left: 5%;
+}
+
+.update-form {
+    height: 100%;
+}
+
+#modifiedData {
+    width: 100%;
+    height: calc(100% - 50px); /* Adjust as needed */
+    margin-bottom: 10px;
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+    <div class="top-buttons">
+        <button onclick="deleteVideo()">Delete</button>
+        <button onclick="changeIndex(-1)">&lt;-</button>
+        <span id="videoIndexText">{{ current_index + 1 }} / {{ videos_metadata|length }}</span>
+        <button onclick="changeIndex(1)">&rarr;</button>
+        <button onclick="forwardVideo()">Forward</button>
+    </div>
+
+    <div class="container">
+        <div class="video-container">
+            <video id="videoPlayer" controls style="width: 100%;">
+                <source src="{{ url_for('serve_video', video_id=videos_metadata[current_index]['fid']) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        <div id="info" class="update-form">
+            {% if videos_metadata %}
+                <h2 id="videoTitle">{{ videos_metadata[current_index]['title'] }}</h2>
+                <form id="updateForm">
+                    <textarea id="modifiedData" rows="15">{{ videos_metadata[current_index] | tojson(indent=2) }}</textarea>
+                    <button type="button" onclick="updateData('{{ videos_metadata[current_index]['_id'] }}')">Update Data</button>
+                </form>
+            {% else %}
+                <p>No videos found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        var current_index = {{ current_index }};
+        var max_index = {{ videos_metadata|length }};
+        var videos_metadata = {{ videos_metadata | tojson }};
+        var videoServeURL = "{{ url_for('serve_video', video_id='') }}";
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
