@@ -4,9 +4,10 @@ from pymongo import MongoClient
 import gridfs
 import pika
 from gen_enum import GenerationMethod
-from repo import video_repo
+from repo.video_repo import VideoRepo
 import sys
 from bson import ObjectId
+import logging
 
 
 if 'debug' in sys.argv[1:]:
@@ -14,78 +15,109 @@ if 'debug' in sys.argv[1:]:
     load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.environ['APP_SECRET']
 
-mongo_client = MongoClient(os.environ['MONGO_HOST'], 27017)
-
-fs_raw = gridfs.GridFS(mongo_client['raw'])
-upload_db = mongo_client["toUpload"]
-fs_upload = gridfs.GridFS(upload_db)
-
-#host will be specified by service name, find better way to do it later
-mq_conn = pika.BlockingConnection(pika.ConnectionParameters(host=os.environ['MQ_HOST']))
-channel = mq_conn.channel()
-
-@app.route("/generate/<gen_method>", methods=["POST"])
-def hello_world(gen_method):
-    err = None
-
-    match gen_method:
-        case GenerationMethod.SIMULATION_SHORT.value:
-            err = video_repo.message_queue(channel, GenerationMethod.SIMULATION_SHORT.value)
-
-        case str(GenerationMethod.DEFAULT):
-            for _, f in request.files.items():
-                err = video_repo.upload_file(f, fs_raw, channel, GenerationMethod.DEFAULT.value)
-
-        case _:
-            methods = [e.value for e in GenerationMethod]
-            return f"Generation Method not implemented. \n Methods: {methods}", 400
-
-    if err:
-        return err
-        
-    return f"started {gen_method}", 200
-
+video_repo = VideoRepo()
 
 
 @app.route('/')
 def index():
     videos_metadata = []
-    for  sim_data in upload_db['simulation'].find():
+    #TODO change later
+    for sim_data in video_repo.get_all(GenerationMethod.SIMULATION_SHORT.value):
         sim_data = dict(sim_data)
         sim_data['_id'] = str(sim_data['_id'])
+        sim_data['fid'] = str(sim_data['fid'])
         videos_metadata.append(sim_data)
+    
     # print(videos_metadata)
-    return render_template('index.html', videos_metadata=videos_metadata, current_index=0)
+    return render_template('index.html', videos_metadata=videos_metadata)
+
+
+@app.route("/videos", methods=["POST"])
+def hello_world():
+    gen_method = request.args.get('gen_method')
+    if gen_method is None:
+        return '"gen_method" query parameter required.', 400
+
+    try:
+        match gen_method:
+            case GenerationMethod.SIMULATION_SHORT.value:
+                video_repo.message_queue(GenerationMethod.SIMULATION_SHORT.value)
+
+            case str(GenerationMethod.DEFAULT):
+                for _, f in request.files.items():
+                    # TODO change this later, don't need to store the data
+                    video_repo.upload_raw_file(f, GenerationMethod.DEFAULT.value)
+
+            case _:
+                methods = [e.value for e in GenerationMethod]
+                return f"Generation Method not implemented. \n Methods: {methods}", 400
+            
+    except Exception as e:
+        logging.exception(e)
+        return "Internal Server Error", 500
+
+
+    return f"started {gen_method}", 200
+
 
 # Route to serve video from MongoDB GridFS
-@app.route('/video/<video_id>')
+@app.route('/videos/<video_id>', methods=["GET"])
 def serve_video(video_id):
-    video_id = ObjectId(video_id)
-    video = fs_upload.get(video_id)
+    video = video_repo.get_video(video_id)
     return send_file(video, mimetype='video/mp4')
 
-@app.route('/delete_video', methods=['DELETE'])
-def delete_video():
-    # Logic to delete the video
-    video_id = request.args.get('video_id')  # Optionally, you can pass the video ID as a query parameter
-    # Perform deletion operation
-    return 'Video deleted', 200
 
-@app.route('/forward_video', methods=['POST'])
-def forward_video():
-    # Logic to forward the video
-    video_id = request.args.get('video_id')  # Optionally, you can pass the video ID as a query parameter
-    # Perform forwarding operation
+# delete
+@app.route('/videos/<video_id>', methods=['DELETE'])
+def delete_video(video_id):
+    try:
+        video_repo.delete_video(collection_name=GenerationMethod.SIMULATION_SHORT.value,
+                                fid=video_id)
+    except Exception as e:
+        logging.exception(e)
+        return 'Internal Server Error', 500
+        
+    return f'Video deleted ({video_id})', 200
+
+#update
+@app.route('/videos/<video_id>', methods=['PUT'])
+def update_video(video_id):
+
+    updated_data = request.json['data']
+    if 'fid' in updated_data:
+        del updated_data['fid']
+    if '_id' in updated_data:
+        del updated_data['_id']
+
+    try:
+        #TODO change collection name later
+        # video_repo.update_video(collection_name=GenerationMethod.SIMULATION_SHORT.value,
+        #                         fid=video_id, data=updated_data)
+        video_repo.delete_video(collection_name=GenerationMethod.SIMULATION_SHORT.value,
+                                fid=video_id)
+        # send to be re-generated
+        video_repo.message_queue(GenerationMethod.SIMULATION_SHORT.value, updated_data)
+
+    except Exception as e:
+        logging.exception(e)
+        return 'Internal Server Error', 500
+    
+    return 'Video data updated', 200
+
+
+#forward / upload
+@app.route('/upload/<video_id>', methods=['POST'])
+def forward_video(video_id):
+    try:
+        video_repo.message_queue('upload', {'fid': video_id})
+    except Exception as e:
+        logging.exception(e)
+        return 'Internal Server Error', 500
+    
     return 'Video forwarded', 200
 
-@app.route('/update_video', methods=['PUT'])
-def update_video():
-    data = request.json
-    video_id = data['videoId']
-    updated_data = data['data']
-    # Logic to update the video data
-    return 'Video data updated', 200
 
 if __name__ == "__main__":
     if 'debug' in sys.argv[1:]:

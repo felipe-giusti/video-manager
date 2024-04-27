@@ -1,3 +1,5 @@
+
+
 function changeIndex(delta) {
     // Update current index based on delta
     current_index += delta;
@@ -5,50 +7,72 @@ function changeIndex(delta) {
     // Ensure current index stays within bounds
     if (current_index < 0) {
         current_index = 0;
-    } else if (current_index >= max_index) {
-        current_index = max_index - 1;
+    } else if (current_index >= videos_metadata.length) {
+        current_index = videos_metadata.length - 1;
     }
 
+    _updateUi();
+}
+
+function _updateUi() {
     // Update video source URL dynamically
     var videoPlayer = document.getElementById('videoPlayer');
-    videoPlayer.src = videoServeURL + videos_metadata[current_index]['fid']; // Assuming '_id' is the video ID field
-    videoPlayer.load();
-
-    // Update other UI elements
-    var videoTitle = document.getElementById('videoTitle');
-    videoTitle.textContent = videos_metadata[current_index]['title'];
+    if (videos_metadata.length > 0 && current_index >= 0 && current_index < videos_metadata.length) {
+        videoPlayer.src = videoServeURL + videos_metadata[current_index].fid; // Assuming 'fid' is the video ID field
+        videoPlayer.load();
+    } else {
+        videoPlayer.src = ''; // Clear the video source
+    }
 
     var modifiedData = document.getElementById('modifiedData');
-    var metadata = videos_metadata[current_index];
-    modifiedData.value = JSON.stringify(metadata, null, 2);
+    if (videos_metadata.length > 0 && current_index >= 0 && current_index < videos_metadata.length) {
+        modifiedData.value = JSON.stringify(videos_metadata[current_index], null, 2);
+    } else {
+        modifiedData.value = ''; // Clear the modified data
+    }
 
     var videoIndexText = document.getElementById('videoIndexText');
-    videoIndexText.textContent = (current_index + 1) + " / " + max_index;
+    if (videos_metadata.length > 0 && current_index >= 0 && current_index < videos_metadata.length) {
+        videoIndexText.textContent = (current_index + 1) + " / " + videos_metadata.length;
+    } else {
+        videoIndexText.textContent = "No videos found";
+    }
 }
 
 
+function _remove_metadata(){
+    videos_metadata.splice(current_index, 1)
+    if (current_index >= videos_metadata.length) {
+        current_index = videos_metadata.length - 1;
+    }
+}
 
-
-
-function updateData(videoId) {
+function updateData() {
+    var url = '/videos/' + videos_metadata[current_index].fid;
     var modifiedData = document.getElementById('modifiedData').value;
     try {
         var parsedData = JSON.parse(modifiedData);
-        sendRequest('/update_video', 'PUT', { videoId: videoId, data: parsedData }, 'Video data updated successfully', 'Failed to update video data');
+        sendRequest(url, 'PUT', { data: parsedData }, 'Video data updated successfully', 'Failed to update video data', _updateUi, _remove_metadata);
     } catch (error) {
         console.error('Error parsing JSON:', error);
     }
 }
 
 function deleteVideo() {
-    sendRequest('/delete_video', 'DELETE', null, 'Video deleted successfully', 'Failed to delete video');
+    var url = '/videos/' + videos_metadata[current_index].fid;
+    console.log('deleting' + url)
+
+    sendRequest(url, 'DELETE', null, 'Video deleted successfully', 'Failed to delete video', _updateUi, _remove_metadata);
 }
 
 function forwardVideo() {
-    sendRequest('/forward_video', 'POST', null, 'Video forwarded successfully', 'Failed to forward video');
+    var url = '/upload/' + videos_metadata[current_index].fid;
+    console.log('forwarding' + url)
+
+    sendRequest(url, 'POST', null, 'Video forwarded successfully', 'Failed to forward video', _updateUi, _remove_metadata);
 }
 
-function sendRequest(url, method, data, successMessage, errorMessage) {
+function sendRequest(url, method, data, successMessage, errorMessage, callback, removefunction=null) {
     var xhr = new XMLHttpRequest();
     xhr.open(method, url, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -56,10 +80,14 @@ function sendRequest(url, method, data, successMessage, errorMessage) {
     xhr.onload = function() {
         if (xhr.status === 200) {
             console.log(successMessage);
-            // Optionally, update the UI or perform other actions
+            if (removefunction) {
+                removefunction();
+            }
+            if (callback) {
+                callback();
+            }
         } else {
             console.error(errorMessage);
         }
     };
 }
-
