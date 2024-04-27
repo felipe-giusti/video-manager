@@ -1,6 +1,10 @@
 # video-manager
-Microservices based project to manage video creation and upload.
-<p>This project was created to better manage some automated video creation projects I was developing and add a feedback / quality assurance step to the process.
+Microservices based project to manage automated video creation and upload to social media.
+
+The manager also adds a "human verification" / "quality assurance" step before the automated upload
+
+
+In the new version a metrics/analytics API is being added so I can better remember some SqlAlchemy and FastAPI concepts.
 
 
 Some of the tools / concepts used on this project are:
@@ -8,14 +12,45 @@ Some of the tools / concepts used on this project are:
 - Kubernetes
 - RabbitMQ
 - Asynchronous Processing
-- MongoDB
+- MongoDB (NoSQL)
+- Postgresql (SQL)
+- FastAPI
+  
+---
+*All services have READMEs explaining them more in depth*
+
+---
 
 ## Project Overview
+The project is a tool to manage different automated video creation/processing services.
+<p>After the videos are created, we can choose what happens to the video, for example:
+
+- Send it to be uploaded
+- Ask for more videos to be generated
+- Change generation options and send to be re-created (it's randomized by default)
+- Delete generated video
+
+<p> If the video is sent to be uploaded, it is uploaded to the configured social medias and some metadata is commited to the database
+
+The metadata, along with other data can be used to create dashboards with the Metrics API
 
 ### Architecture
-![architecture](./docs/video-manager-architecture.png)
+v2 overview:
+![architecture-v2](./docs/video-manager-architecture-v2.png "architecture-v2")
+#### Choices
+- **Microservices architecture** works well for the different video generation services, and enable me to scale each service separately
+- **toUpload db (NoSQL MongoDB)** stores videos files (using GridFS) and generation parameters. These parameters have dynamic schemas, that's why a SQL database wasn't chosen
+- At first, **raw Videos DB** is used if a video input is needed just because it's easier to implement, but I'm planning to change it to a **data stream** solution because the data doesn't need to be stored
+- **RabbitMQ** is used for messaging. It's currently inside the Kubernetes Cluster, but I may host it outside the cluster in the future.
+- The SQL databases and the Metrics API was added in this version so I can remember how to work with **SqlAlchemy and FastAPI** (it's not really needed for the project)
 
+---
+
+v1 can be found in: [docs folder](./docs/video-manager-architecture.png)
+
+---
 ### Program Flow
+Will be updated later*
 #### Video Creation
 1. The user communicates with the API via a single gateway. Depending on the service intended, the user can:
    1. upload a video

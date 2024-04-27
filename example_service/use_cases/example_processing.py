@@ -12,6 +12,8 @@ def process(fid, mq_channel):
 
     file = fs_raw.get(ObjectId(fid))
 
+    # do something...
+
     err = video_repo.upload(file, fs_upload, mq_channel, "to_upload")
 
     if err:
