@@ -2,9 +2,11 @@
 
 This is a placeholder example of a processing service from video input.
 
-My other video generation / processing services are privated for now because I'm using them commercially. (I will add references to videos on social media after I finish the services, so it is easier to understand this project)
+My other video generation / processing services are privated for now because I'm using them commercially.
 
-I plan on adding some open source services here in the future, but can't do that currently.
+(I will add references to videos on social media after I finish the services, so it is easier to understand this project)
+
+I plan on adding some open source services here in the future, but I can't do that currently.
 
 Examples of Video Generation Services I'm developing:
 - Video Generation:

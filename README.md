@@ -39,8 +39,8 @@ v2 overview:
 ![architecture-v2](./docs/video-manager-architecture-v2.png "architecture-v2")
 #### Choices
 - **Microservices architecture** works well for the different video generation services, and enable me to scale each service separately
-- **toUpload db (NoSQL MongoDB)** stores videos files (using GridFS) and generation parameters. These parameters have dynamic schemas, that's why a SQL database wasn't chosen
-- At first, **raw Videos DB** is used if a video input is needed just because it's easier to implement, but I'm planning to change it to a **data stream** solution because the data doesn't need to be stored
+- **toUpload db (NoSQL MongoDB)** stores videos files (using GridFS) and generation parameters. The parameters have dynamic schemas, that's why a NoSQL database was chosen to store them
+- **raw Videos DB** was used if a video input was needed just because it was easier to implement, but I'm planning on changing it to a **data stream** solution because the data doesn't need to be stored
 - **RabbitMQ** is used for messaging. It's currently inside the Kubernetes Cluster, but I may host it outside the cluster in the future.
 - The SQL databases and the Metrics API was added in this version so I can remember how to work with **SqlAlchemy and FastAPI** (it's not really needed for the project)
 
