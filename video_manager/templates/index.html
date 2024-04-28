@@ -22,7 +22,7 @@
         <div class="video-container">
             <video id="videoPlayer" controls style="width: 100%;">
                 {% if videos_metadata | length > 0 %}
-                    <source src="{{ url_for('serve_video', video_id='') + videos_metadata[current_index].fid }}" type="video/mp4">
+                    <source src="{{ url_for('video_gen.serve_video', video_id='') + videos_metadata[current_index].fid }}" type="video/mp4">
                 {% else %}
                     <p>No videos found.</p>
                 {% endif %}
@@ -44,7 +44,7 @@
     </div>
 
     <script>
-        var videoServeURL = "{{ url_for('serve_video', video_id='') }}";
+        var videoServeURL = "{{ url_for('video_gen.serve_video', video_id='') }}";
         var videos_metadata = {{ videos_metadata | tojson }};
         var current_index = {{ current_index }};
     </script>

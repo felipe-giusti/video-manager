@@ -9,6 +9,9 @@ import os
 
 class VideoRepo:
     def __init__(self, client=None, mq_conn=None):
+        print('=======================')
+        print('init VIDEO REPO')
+        print('======================')
         if client is None:
             self.client = MongoClient(os.environ['MONGO_HOST'], 27017)
         else: self.client = client

@@ -14,6 +14,7 @@ Some of the tools / concepts used on this project are:
 - Asynchronous Processing
 - MongoDB (NoSQL)
 - Postgresql (SQL)
+- SQL Alchemy
 - FastAPI
   
 ---

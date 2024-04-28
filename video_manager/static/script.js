@@ -58,21 +58,21 @@ function updateData() {
     }
 }
 
-function deleteVideo() {
-    var url = '/videos/' + videos_metadata[current_index].fid;
+function deleteVideo(video_id=null) {
+    if (!video_id){
+        video_id = videos_metadata[current_index].fid
+    }
+    var url = '/videos/' + video_id;
     console.log('deleting' + url)
 
     sendRequest(url, 'DELETE', null, 'Video deleted successfully', 'Failed to delete video', _updateUi, _remove_metadata);
 }
 
 function forwardVideo() {
-    var url = '/upload/' + videos_metadata[current_index].fid;
-    console.log('forwarding' + url)
-
-    sendRequest(url, 'POST', null, 'Video forwarded successfully', 'Failed to forward video', _updateUi, _remove_metadata);
+    window.location.href = '/upload/' + videos_metadata[current_index].fid;
 }
 
-function sendRequest(url, method, data, successMessage, errorMessage, callback, removefunction=null) {
+function sendRequest(url, method, data, successMessage, errorMessage, callback, removefunction=null, callbackArgs=null) {
     var xhr = new XMLHttpRequest();
     xhr.open(method, url, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -84,10 +84,35 @@ function sendRequest(url, method, data, successMessage, errorMessage, callback, 
                 removefunction();
             }
             if (callback) {
-                callback();
+                if (callbackArgs !== null) {
+                    callback(...callbackArgs)
+                }else{
+                    callback();
+                }
             }
         } else {
             console.error(errorMessage);
         }
     };
+}
+
+
+// UPLOAD
+
+function goBack(){
+    window.history.back()
+}
+
+function _delete(video_id){
+    window.location.href = '/'
+    console.log('_delete video id: ' + video_id)
+    deleteVideo(video_id)
+
+}
+
+function uploadToSocial(video_id){
+    url = '/upload/' + video_id;
+    console.log('uploading to Social')
+    sendRequest(url, 'POST', null, 'Video sent to upload successfully', 'Failed to upload video', _delete, null, [video_id]);
+    
 }
