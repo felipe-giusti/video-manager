@@ -5,7 +5,7 @@ from flask import Blueprint, request, send_file
 from app import video_repo
 from app.gen_enum import GenerationMethod
 
-video_gen_bp = Blueprint("video_gen", __name__)
+video_gen_bp = Blueprint("videos", __name__)
 
 
 @video_gen_bp.route("/", methods=["POST"])
