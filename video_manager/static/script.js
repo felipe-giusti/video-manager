@@ -114,5 +114,5 @@ function uploadToSocial(video_id){
     url = '/upload/' + video_id;
     console.log('uploading to Social')
     sendRequest(url, 'POST', null, 'Video sent to upload successfully', 'Failed to upload video', _delete, null, [video_id]);
-    
+
 }

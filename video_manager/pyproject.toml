@@ -1,0 +1,19 @@
+[tool.ruff]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "C90"
+]
+ignore = [
+    "C901", # max-complexity-10
+    "E501", # line-too-long
+]
+exclude = [
+    "README.md"
+]
+fix = true
+show-fixes = true
+target-version = "py312"
+line-length = 88

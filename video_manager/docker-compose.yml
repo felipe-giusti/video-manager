@@ -1,0 +1,43 @@
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq
+    ports:
+      - "15672:15672"  # Web UI for RabbitMQ
+      - "5672:5672"    # RabbitMQ messaging port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+
+  mongodb:
+    image: "mongo:latest"
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - "27017:27017"  # MongoDB default port
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.runCommand({ connectionStatus: 1 })"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+
+  video-manager:
+    build: .
+    container_name: video-manager
+    depends_on:
+      - rabbitmq
+      - mongodb
+    environment:
+      MQ_HOST: rabbitmq
+      DB_CLIENT_URL: mongodb://root:root@mongodb:27017
+    ports:
+      - "8080:8080"

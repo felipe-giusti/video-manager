@@ -3,5 +3,4 @@ kind: ConfigMap
 metadata:
   name: manager-configmap
 data:
-  MONGO_HOST: host.minikube.internal
   MQ_HOST: rabbitmq

@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+        files: ^video_manager/.*\.yaml$
+      - id: end-of-file-fixer
+        files: ^video_manager/.*$
+        exclude: ^video_manager/requirements\.txt$
+      - id: trailing-whitespace
+        files: ^video_manager/.*$
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.5
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix, --show-fixes]
+        files: ^video_manager/.*\.py$
+      - id: ruff-format
+        files: ^video_manager/.*\.py$
