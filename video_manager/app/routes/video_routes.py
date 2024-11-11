@@ -6,7 +6,6 @@ from app import video_repo
 from app.gen_enum import GenerationMethod
 
 video_gen_bp = Blueprint("video_gen", __name__)
-# prefix videos
 
 
 @video_gen_bp.route("/", methods=["POST"])
@@ -44,7 +43,7 @@ def serve_video(video_id):
 
 
 # delete
-@video_gen_bp.route("//<video_id>", methods=["DELETE"])
+@video_gen_bp.route("/<video_id>", methods=["DELETE"])
 def delete_video(video_id):
     try:
         video_repo.delete_video(

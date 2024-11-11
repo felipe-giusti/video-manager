@@ -1,3 +1,4 @@
+import logging
 import sys
 
 from flask import Flask
@@ -19,6 +20,11 @@ app.register_blueprint(video_gen_bp, url_prefix="/videos")
 app.register_blueprint(upload_bp, url_prefix="/upload")
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
     if "debug" in sys.argv[1:]:
         app.run(host="localhost", port=8080)
     else:

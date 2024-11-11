@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 import gridfs
@@ -6,8 +7,8 @@ import pika
 from bson import ObjectId
 from pymongo import MongoClient
 
-# TODO add logger
 # TODO change to util / common library
+logger = logging.getLogger(__name__)
 
 
 class VideoRepo:
@@ -33,15 +34,15 @@ class VideoRepo:
     def upload_raw_file(self, file, queue_name: str):
         try:
             fid = self.fs_raw.put(file)
-        except Exception:
-            print("fs put error")
+        except Exception as e:
+            logger.exception(f"fs put error {e}")
             raise
 
         message = {"raw_fid": str(fid)}
 
         try:
             self.mq_channel.queue_declare(queue=queue_name, durable=True)
-            # print(f"basic publish to {queue_name} - message: {message}")
+            logger.debug(f"basic publish to {queue_name} - message: {message}")
             self.mq_channel.basic_publish(
                 exchange="",
                 routing_key=queue_name,
@@ -51,15 +52,15 @@ class VideoRepo:
                 ),
             )
 
-        except Exception:
-            print("rabbitmq publish error")
+        except Exception as e:
+            logger.exception(f"MQ publish error: {e}")
             self.fs_raw.delete(fid)
             raise
 
     def message_queue(self, queue_name, message={}):
         try:
             self.mq_channel.queue_declare(queue=queue_name, durable=True)
-            # print(f"basic publish to {queue_name} - message: {message}")
+            logger.debug(f"basic publish to {queue_name} - message: {message}")
             self.mq_channel.basic_publish(
                 exchange="",
                 routing_key=queue_name,
@@ -69,8 +70,8 @@ class VideoRepo:
                 ),
             )
 
-        except Exception:
-            print("rabbitmq publish error")
+        except Exception as e:
+            logger.exception(f"MQ publish error: {e}")
             raise
 
     def delete_video(self, collection_name, fid: str | ObjectId):

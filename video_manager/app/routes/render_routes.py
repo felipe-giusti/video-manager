@@ -16,7 +16,6 @@ def index():
         sim_data["fid"] = str(sim_data["fid"])
         videos_metadata.append(sim_data)
 
-    # print(videos_metadata)
     return render_template("index.html", videos_metadata=videos_metadata)
 
 
