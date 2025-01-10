@@ -24,20 +24,18 @@ services:
     ports:
       - "27017:27017"  # MongoDB default port
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.runCommand({ connectionStatus: 1 })"]
-      interval: 10s
-      retries: 5
-      start_period: 10s
-      timeout: 5s
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
 
-  video-manager:
-    build: .
-    container_name: video-manager
-    depends_on:
-      - rabbitmq
-      - mongodb
-    environment:
-      MQ_HOST: rabbitmq
-      DB_CLIENT_URL: mongodb://root:root@mongodb:27017
-    ports:
-      - "8080:8080"
+  # video-manager:
+  #   build: .
+  #   container_name: video-manager
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     mongodb:
+  #       condition: service_healthy
+  #   environment:
+  #     MQ_HOST: rabbitmq
+  #     DB_CLIENT_URL: mongodb://root:root@mongodb:27017
+  #   ports:
+  #     - "8080:8080"

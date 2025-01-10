@@ -1,10 +1,7 @@
 # video-manager
-Microservices based project to manage automated video creation and upload to social media.
+Microservices based project to manage automated video creation, upload, and feedback/analytics.
 
 The manager also adds a "human verification" / "quality assurance" step before the automated upload
-
-
-In the new version a metrics/analytics API is being added so I can better remember some SqlAlchemy and FastAPI concepts.
 
 
 Some of the tools / concepts used on this project are:
@@ -22,36 +19,38 @@ Some of the tools / concepts used on this project are:
 
 ---
 
-## Project Overview
-The project is a tool to manage different automated video creation/processing services.
-<p>After the videos are created, we can choose what happens to the video, for example:
-
-- Send it to be uploaded
-- Ask for more videos to be generated
-- Change generation options and send to be re-created (it's randomized by default)
-- Delete generated video
-
-<p> If the video is sent to be uploaded, it is uploaded to the configured social medias and some metadata is commited to the database
-
-The metadata, along with other data can be used to create dashboards with the Metrics API
 
 ### Architecture
 v2 overview:
-![architecture-v2](./docs/video-manager-architecture-v2.png "architecture-v2")
+![architecture-v3](./docs/video-manager-architecture-v3.jpg "architecture-v3")
 #### Choices
-- **Microservices architecture** works well for the different video generation services, and enable me to scale each service separately
-- **toUpload db (NoSQL MongoDB)** stores videos files (using GridFS) and generation parameters. The parameters have dynamic schemas, that's why a NoSQL database was chosen to store them
-- **raw Videos DB** was used if a video input was needed just because it was easier to implement, but I'm planning on changing it to a **data stream** solution because the data doesn't need to be stored
-- **RabbitMQ** is used for messaging. It's currently inside the Kubernetes Cluster, but I may host it outside the cluster in the future.
-- The SQL databases and the Metrics API was added in this version so I can remember how to work with **SqlAlchemy and FastAPI** (it's not really needed for the project)
+- **Microservices architecture** works well for the different video generation services, and enables me to scale each service separately
+- **videos db (NoSQL MongoDB)** stores video files (using GridFS) and generation parameters / metadata. The parameters have dynamic schemas, that's why a NoSQL database was chosen to store them.
+The raw and processed videos stored in the database until the user chooses to edit, delete, or upload them to social media
+- **RabbitMQ** is used for messaging. It was chosen for it's routing schemas and the out of the box data persistence. It's currently inside the Kubernetes Cluster, but I may host it outside the cluster in the future.
+- The NoSQL database in the analytics service was chosen so it is easy to save all the different data structures from each platform and decide on wich data I will be using later.
+- The SQL database in the analytics service was chosen to improve the querying and aggreagation speed for these type of operations usually done in dashboards
+
+- **API library**: For now I am using Flask for the manager API mainly because I was using it to create the pages for the frontend. I decided to move to NiceGUI for the frontend (so it is easy to create it with pure python for now), and may switch to FastAPI for their async support.
 
 ---
 
-v1 can be found in: [docs folder](./docs/video-manager-architecture.png)
+Earlier versions can be found in: [docs folder](./docs/video-manager-architecture.png)
 
 ---
+
+## Project Overview
+The project is a tool to manage different automated video creation/processing services.
+<p>The main features the project will handle are as follows:
+
+- Request automated video creation (the manager sends a request to one or more generation services via the queue)
+- Add video processing steps (handled by the Processing Service)
+- Approve for social media upload or scheduled upload
+- Do not approve: delete or re-request video generation with different options
+- Analytics Service (For future development) aquisition of metrics from multiple platforms and display in a single dashboard
+
 ### Program Flow
-Will be updated later*
+This is out of date and may be deleted later*
 #### Video Creation
 1. The user communicates with the API via a single gateway. Depending on the service intended, the user can:
    1. upload a video
